@@ -16,9 +16,9 @@
 
 
 bl_info = {
-    "name" : "Addon Template",
+    "name" : "Object Select Tools",
     "author" : "Sai Ling",
-    "description": "Blender addon template",
+    "description": "Select Similar Objects",
     "version": (0, 0, 1),
     "blender" : (2, 90, 0),
     "location": "View3D > Sidebar",
