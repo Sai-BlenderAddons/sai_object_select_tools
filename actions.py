@@ -15,101 +15,113 @@ def round_vector(vector):
     return new_vector
 
 
-def select_object_by_dimemsions():
-    sai_properties = bpy.context.scene.SAI_SELECT_properties
-    dimensions_threshold = sai_properties.dimensions_threshold
-    
+def select_object_by_dimemsions(select_mode='MATCH ONLY', threshold=Vector((0, 0, 0))):
+    objects = [obj for obj in bpy.context.visible_objects if obj.type == 'MESH']
+    selected_object = [obj for obj in objects if obj.select_get() == True]
 
-    objects = bpy.context.visible_objects
 
-    active_dimensions = round_vector(bpy.context.object.dimensions)
-    compare_vector = mathutils.Vector((dimensions_threshold,dimensions_threshold,dimensions_threshold))
-    
     for object in objects:
-        result = (round_vector(object.dimensions) - active_dimensions) 
-        if  result <= compare_vector:
-            object.select_set(True)
+        x = abs(object.dimensions[0]-bpy.context.object.dimensions[0])
+        y = abs(object.dimensions[1]-bpy.context.object.dimensions[1])
+        z = abs(object.dimensions[2]-bpy.context.object.dimensions[2])
+
+        if x <= threshold[0] and y <= threshold[1] and z <= threshold[2]:
+            object.select_set(True) 
         else:
             object.select_set(False)
 
-def select_object_by_dimemsions_ot():
-    sai_properties = bpy.context.scene.SAI_SELECT_properties
-    select_mode = sai_properties.select_expand
+    if select_mode == 'EXPAND':
+        [object.select_set(True) for object in selected_object]
 
-    objects = bpy.context.visible_objects
+    return {"FINISHED"}
+
+def select_object_by_distance(threshold=Vector((0, 0, 0))):
+    objects = [obj for obj in bpy.context.visible_objects if obj.type == 'MESH']
+
+    for object in objects:
+        x = abs(object.location[0]-bpy.context.object.location[0])
+        y = abs(object.location[1]-bpy.context.object.location[1])
+        z = abs(object.location[2]-bpy.context.object.location[2])
+
+        if x <= threshold[0] and y <= threshold[1] and z <= threshold[2]:
+            object.select_set(True) 
+        else:
+            object.select_set(False)
+
+    return {"FINISHED"}
+
+def select_object_by_vertices(select_mode='MATCH ONLY', threshold=0):
+    
+    objects = [obj for obj in bpy.context.visible_objects if obj.type == 'MESH']
+    count = len(bpy.context.object.data.vertices)
     selected_object = [obj for obj in objects if obj.select_get() == True]
 
-    if select_mode == 'MATCH ONLY':
-        select_object_by_dimemsions()
-    elif select_mode == 'EXPAND':
-        select_object_by_dimemsions()
-        [obj.select_set(True) for obj in selected_object]
+    for object in objects:
+        if abs(len(object.data.vertices) - count) <= threshold:
+            object.select_set(True) 
+        else:
+            object.select_set(False)
 
+    if select_mode == 'EXPAND':
+        [object.select_set(True) for object in selected_object]
 
     return select_mode
 
 
-def select_object_by_vertex_count():
-    sai_properties = bpy.context.scene.SAI_SELECT_properties
-    threshold = sai_properties.mesh_vertex_threshold
+def select_object_by_edges(select_mode='MATCH ONLY', threshold=0):
+    objects = [obj for obj in bpy.context.visible_objects if obj.type == 'MESH']
+    count = len(bpy.context.object.data.edges)
+    selected_object = [obj for obj in objects if obj.select_get() == True]
+
+    for object in objects:
+        if abs(len(object.data.edges) - count) <= threshold:
+            object.select_set(True) 
+        else:
+            object.select_set(False)
+
+    if select_mode == 'EXPAND':
+        [object.select_set(True) for object in selected_object]
+
+    return select_mode
+
+def select_object_by_polygons(select_mode='MATCH ONLY', threshold=0):
+    objects = [obj for obj in bpy.context.visible_objects if obj.type == 'MESH']
+    count = len(bpy.context.object.data.polygons)
+    selected_object = [obj for obj in objects if obj.select_get() == True]
+
+    for object in objects:
+        if abs(len(object.data.polygons) - count) <= threshold:
+            object.select_set(True) 
+        else:
+            object.select_set(False)
+
+    if select_mode == 'EXPAND':
+        [object.select_set(True) for object in selected_object]
+
+    return select_mode
+
+
+def select_object_by_area(select_mode='MATCH ONLY', threshold=0):
+    
+    objects = [obj for obj in bpy.context.visible_objects if obj.type == 'MESH']
+    selected_object = [obj for obj in objects if obj.select_get() == True]
+    count = round(sum([poly.area for poly in bpy.context.object.data.polygons]), 9)
+
+    for object in objects:
+        area_size = round(sum([poly.area for poly in object.data.polygons]), 9)
+        if abs(area_size - count) <= threshold:
+            object.select_set(True) 
+        else:
+            object.select_set(False)
+
+    if select_mode == 'EXPAND':
+        [obj.select_set(True) for obj in selected_object]
+
+    return count
+
+def sort_object_by_vertices_count(is_reverse=False):
 
     objects = [obj for obj in bpy.context.visible_objects if obj.type == 'MESH']
-    active_count = len(bpy.context.object.data.vertices)
-    same_object = [obj.select_set(True) for obj in objects if len(obj.data.vertices) == active_count]
-    bigger_objects = [obj for obj in objects if len(obj.data.vertices) > active_count]
-    smaller_objects = [obj for obj in objects if len(obj.data.vertices) > active_count]
+    objects.sort(reverse=is_reverse, key = lambda object: len(object.data.vertices))
 
-    if threshold > 0:
-        for obj in bigger_objects:
-            if len(obj.data.vertices) <= (active_count + threshold):
-                obj.select_set(True)
-            else:
-                obj.select_set(False)
-
-    if threshold < 0:
-        for obj in smaller_objects:
-            if (len(obj.data.vertices)-threshold) >= active_count:
-                obj.select_set(True)
-            else:
-                obj.select_set(False)
-
-    # elif threshold < 0:
-    #     for obj in smaller_objects:
-    #         different = len(obj.data.vertices) - active_count
-    #         if different >= threshold:
-    #             obj.select_set(True)
-    #         else:
-    #             obj.select_set(False)
-
-
-    # for object in objects:
-    #     v_count = len(object.data.vertices)
-    #     if  v_count == active_count:
-    #         object.select_set(True)
-    
-    #     if threshold > 0:
-    #         if v_count > active_count:
-    #             if (v_count-threshold) <= 0:
-    #                 object.select_set(True)
-    #     else:
-    #         object.select_set(False)
-
-    return active_count
-
-
-def select_object_by_vertex_count_ot():
-    sai_properties = bpy.context.scene.SAI_SELECT_properties
-    select_mode = sai_properties.select_expand
-    
-    objects = bpy.context.visible_objects
-    selected_object = [obj for obj in objects if obj.select_get() == True]
-
-
-    if select_mode == 'MATCH ONLY':
-        select_object_by_vertex_count()
-    elif select_mode == 'EXPAND':
-        select_object_by_vertex_count()
-        [obj.select_set(True) for obj in selected_object]
-
-
-    return select_mode
+    return objects

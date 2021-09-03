@@ -47,10 +47,10 @@ class SAI_SELECT_PT_object_mode(bpy.types.Panel):
     def poll(cls, context):
         return context.mode in {'OBJECT'}
 
-class SAI_SELECT_PT_by_dimensions(bpy.types.Panel):
+class SAI_SELECT_PT_by_object_properties(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_label = "By Dimensions"
+    bl_label = "By Object Properties"
     bl_parent_id = "SAI_SELECT_PT_object_mode"
     # bl_options = {'DRAW_BOX', 'HIDE_HEADER','DEFAULT_CLOSED'}  
 
@@ -59,26 +59,27 @@ class SAI_SELECT_PT_by_dimensions(bpy.types.Panel):
         sai_properties = context.scene.SAI_SELECT_properties
 
         layout = self.layout
-        layout.use_property_split = False
+
         
         col = layout.column()
+        col.use_property_split = True
         col.use_property_decorate = False
         row = col.row(align=True)
-        row.label(text="Dimensions:")
+        row.label(text="Select by distance : ")
         row = col.row(align=True)
-        row.prop(ob, "dimensions", text="")
+        row.prop(sai_properties, "distance_threshold")
         row = col.row(align=True)
-        row.label(text="Threshold:")
+        row.label(text="Select by dimensions : ")
         row = col.row(align=True)
-        row.prop(sai_properties, "dimensions_threshold", text="")
+        row.prop(sai_properties, "dimensions_threshold")
         row = col.row(align=True)
-        row.operator('sai_select.by_dimensions')
+        row.operator('sai_select.same_dimensions')
 
 
-class SAI_SELECT_PT_by_mesh_count(bpy.types.Panel):
+class SAI_SELECT_PT_by_mesh_data(bpy.types.Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_label = "By Mesh Count"
+    bl_label = "By Mesh Data"
     bl_parent_id = "SAI_SELECT_PT_object_mode"
     # bl_options = {'DRAW_BOX', 'HIDE_HEADER','DEFAULT_CLOSED'}  
 
@@ -91,38 +92,28 @@ class SAI_SELECT_PT_by_mesh_count(bpy.types.Panel):
         col = layout.column()
         col.use_property_decorate = False
         row = col.row(align=True)
-        row.operator('sai_select.same_vertices_count')
-        row = col.row(align=False)
-        row.prop(sai_properties, "mesh_vertex_threshold",)
-
-class SAI_SELECT_PT_by_location(bpy.types.Panel):
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_label = "By Location"
-    bl_parent_id = "SAI_SELECT_PT_object_mode"
-    # bl_options = {'DRAW_BOX', 'HIDE_HEADER','DEFAULT_CLOSED'}  
-
-    def draw(self,context):
-        sai_properties = context.scene.SAI_SELECT_properties
-
-        layout = self.layout
-        # layout.use_property_split = False
-        
-        col = layout.column()
-        col.use_property_decorate = False
+        row.prop(sai_properties, 'vertices_threshold')  
         row = col.row(align=True)
         row.operator('sai_select.same_vertices_count')
-        row = col.row(align=False)
-        row.prop(sai_properties, "mesh_vertex_threshold",)
-
+        row = col.row(align=True)
+        row.prop(sai_properties, 'edges_threshold')  
+        row = col.row(align=True)
+        row.operator('sai_select.same_edges_count')
+        row = col.row(align=True)
+        row.prop(sai_properties, 'polygons_threshold')  
+        row = col.row(align=True)
+        row.operator('sai_select.same_polygons_count')
+        row = col.row(align=True)
+        row.prop(sai_properties, 'area_threshold')  
+        row = col.row(align=True)
+        row.operator('sai_select.same_polygons_area')      
 
 classes = (
     SAI_SELECT_PT_main,
     SAI_SELECT_PT_settings,
     SAI_SELECT_PT_object_mode,
-    SAI_SELECT_PT_by_dimensions,
-    SAI_SELECT_PT_by_mesh_count,
-    SAI_SELECT_PT_by_location,
+    SAI_SELECT_PT_by_object_properties,
+    SAI_SELECT_PT_by_mesh_data,
 )
 
 def register():
