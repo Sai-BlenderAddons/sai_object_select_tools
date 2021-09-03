@@ -1,6 +1,16 @@
 
-# Blender addon temlpate
+# Object select tools
 
-Blender Addon template
+select object by various way
 
+## By Object Properties
 
+* by distance(location)
+* by dimensions
+
+## By Mesh Data
+
+* by vertices count
+* by edges count
+* by polygons count
+* by area
